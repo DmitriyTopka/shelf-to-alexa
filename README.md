@@ -21,12 +21,23 @@ Node.js 22 or newer.
 git clone https://github.com/DmitriyTopka/shelf-to-alexa.git
 cd shelf-to-alexa
 npm ci
-SHOP_URL=https://yourstore.com npm start
+SHOP_URL=https://yourstore.com SHOP_REGION=US DEMO_SHOPPER=me npm start
 ```
 
 That serves `http://127.0.0.1:8787/mcp` for that store (`examples/serve.ts`, under 60 lines). The catalog is fetched on
 the first tool call, one page a second, and cached on disk for 6 hours. Check the store's terms before you read its
 feed.
+
+Why the two extra variables:
+
+- `SHOP_REGION=US` picks the US plug or region variant. Without it you get the first variant in stock, which can be
+  a foreign plug. On satechi.net, for example, the 100W wall charger comes back as the `AU` version because the US
+  one is sold out.
+- `DEMO_SHOPPER=me` makes every request act as one local shopper. Without it search and compare still work, but the
+  device closet and orders answer "only when you're signed in". Use it for local testing only.
+
+`curl http://127.0.0.1:8787/health` tells you the server is up and which store it reads. To stop the server, press
+Ctrl+C in that terminal (or `kill` its PID if you started it in the background).
 
 Try it with curl:
 
@@ -85,6 +96,15 @@ Rules behind it:
 - Warranty plans and trade-ins are classified before ranking, so they never show up as the cheapest robot.
 
 ## Use it as a library
+
+The package is not on npm. Install it straight from GitHub:
+
+```bash
+npm install github:DmitriyTopka/shelf-to-alexa
+```
+
+npm clones the repo and builds `dist/` on install (the `prepare` script), so the first install takes a few extra
+seconds. Pin a commit with `github:DmitriyTopka/shelf-to-alexa#<commit>` if you want the same code every time.
 
 ```ts
 import { createMcpHandler } from '@modelcontextprotocol/server';
